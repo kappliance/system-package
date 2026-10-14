@@ -1,0 +1,6 @@
+{
+  "version": "v1",
+  "component": "hello",
+  "platforms": [{"os": "linux", "architecture": "amd64", "adapter": "stock-systemd"}],
+  "files": [{"name": "message", "path": "components/message.txt", "blob": "message"}]
+}

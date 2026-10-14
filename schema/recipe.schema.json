@@ -1,0 +1,478 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "v1"
+    },
+    "component": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,62}$"
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "os": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,127}$"
+          },
+          "architecture": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,127}$"
+          },
+          "adapter": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,127}$"
+          },
+          "containerdVersion": {
+            "type": "string",
+            "pattern": "^([a-zA-Z0-9][a-zA-Z0-9._+-]{0,127})?$"
+          },
+          "containerdDigest": {
+            "type": "string",
+            "pattern": "^(sha256:[a-f0-9]{64})?$"
+          },
+          "runcDigest": {
+            "type": "string",
+            "pattern": "^(sha256:[a-f0-9]{64})?$"
+          },
+          "runcShimDigest": {
+            "type": "string",
+            "pattern": "^(sha256:[a-f0-9]{64})?$"
+          },
+          "configVersion": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "shimProfile": {
+            "type": "string",
+            "pattern": "^([a-zA-Z0-9][a-zA-Z0-9._+-]{0,127})?$"
+          }
+        },
+        "required": [
+          "os",
+          "architecture",
+          "adapter"
+        ]
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "inputs": {
+      "type": "object",
+      "maxProperties": 32,
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,62}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "enum": [
+              "string",
+              "digest",
+              "artifact",
+              "secret"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "perNode": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,62}$"
+          },
+          "path": {
+            "type": "string",
+            "maxLength": 256,
+            "pattern": "^(components|state|run)/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}(/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127})*$"
+          },
+          "blob": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,62}$"
+          },
+          "literal": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "secret": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,62}$"
+          },
+          "artifact": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,62}$"
+          },
+          "executable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "path"
+        ],
+        "oneOf": [
+          {
+            "required": [
+              "blob"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "literal"
+                  ]
+                },
+                {
+                  "required": [
+                    "secret"
+                  ]
+                },
+                {
+                  "required": [
+                    "artifact"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "literal"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "blob"
+                  ]
+                },
+                {
+                  "required": [
+                    "secret"
+                  ]
+                },
+                {
+                  "required": [
+                    "artifact"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "secret"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "blob"
+                  ]
+                },
+                {
+                  "required": [
+                    "literal"
+                  ]
+                },
+                {
+                  "required": [
+                    "artifact"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "artifact"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "blob"
+                  ]
+                },
+                {
+                  "required": [
+                    "literal"
+                  ]
+                },
+                {
+                  "required": [
+                    "secret"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "executable": {
+                  "const": true
+                }
+              },
+              "required": [
+                "executable"
+              ]
+            },
+            "then": {
+              "required": [
+                "blob"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^components/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}(/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127})*$"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "secret"
+              ]
+            },
+            "then": {
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^state/secrets/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}(/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127})*$"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "artifact"
+              ]
+            },
+            "then": {
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^state/data/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}(/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127})*$"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "maxItems": 64,
+      "minItems": 0
+    },
+    "directories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 256,
+            "pattern": "^(state|run)/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}(/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127})*$"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "maxItems": 64,
+      "minItems": 0
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,62}$"
+          },
+          "binary": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,62}$"
+          },
+          "arguments": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 4096,
+              "pattern": "^[^\u0000\r\n]*$"
+            },
+            "maxItems": 64,
+            "minItems": 0
+          },
+          "environment": {
+            "type": "object",
+            "maxProperties": 32,
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]{0,63}$",
+              "not": {
+                "pattern": "^LD_"
+              }
+            },
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 4096,
+              "pattern": "^[^\u0000\r\n]*$"
+            }
+          },
+          "health": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "snapshotter": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^run/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}(/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127})*$"
+              },
+              "broker": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^run/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}(/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127})*$"
+              }
+            },
+            "required": []
+          },
+          "requiresFuse": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "binary"
+        ]
+      },
+      "maxItems": 64,
+      "minItems": 0
+    },
+    "containerd": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "handler": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,62}$"
+        },
+        "snapshotter": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,62}$"
+        },
+        "socket": {
+          "type": "string",
+          "maxLength": 256,
+          "pattern": "^run/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}(/[a-zA-Z0-9][a-zA-Z0-9._-]{0,127})*$"
+        },
+        "shimBinary": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,62}$"
+        },
+        "environment": {
+          "type": "object",
+          "maxProperties": 32,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,63}$",
+            "not": {
+              "pattern": "^LD_"
+            }
+          },
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 4096,
+            "pattern": "^[^\u0000\r\n]*$"
+          }
+        }
+      },
+      "required": [
+        "handler",
+        "snapshotter",
+        "socket",
+        "shimBinary"
+      ]
+    },
+    "pause": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "snapshotter": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,62}$"
+        }
+      },
+      "required": [
+        "snapshotter"
+      ]
+    },
+    "sysexts": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "blob"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,62}$"
+          },
+          "blob": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,62}$"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "version",
+    "component",
+    "platforms"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kappliance.io/system-package/recipe.schema.json",
+  "title": "System Package v1 recipe",
+  "$comment": "Validate additionally checks encoded byte and aggregate resource bounds, destination conflicts, declared-and-used inputs, template and executable references, and matching pause/containerd snapshotters. Consumer authorization and host qualification remain separate.",
+  "dependentRequired": {
+    "pause": [
+      "containerd"
+    ]
+  }
+}
